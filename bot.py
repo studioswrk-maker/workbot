@@ -45,6 +45,7 @@ QUIET_START      = int(os.getenv("QUIET_START", "22"))
 QUIET_END        = int(os.getenv("QUIET_END", "8"))
 MEETING_LEAD_MIN = int(os.getenv("MEETING_LEAD_MIN", "30"))
 SCAN_ALL         = os.getenv("SCAN_ALL", "false").lower() in ("1", "true", "yes")
+OWNER_NAMES      = [n.strip().lower() for n in os.getenv("OWNER_NAMES", "").split(",") if n.strip()]
 DB_PATH          = os.getenv("DB_PATH", "bot.db")
 
 logging.basicConfig(format="%(asctime)s %(levelname)s %(message)s", level=logging.INFO)
@@ -246,8 +247,9 @@ async def on_group(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     reply_to_owner = bool(msg.reply_to_message and msg.reply_to_message.from_user
                           and msg.reply_to_message.from_user.id == oid)
     watched = sender_un in watch_set()
+    name_hit = bool(OWNER_NAMES and any(n in text.lower() for n in OWNER_NAMES))
 
-    if not (SCAN_ALL or mentioned or reply_to_owner or watched):
+    if not (SCAN_ALL or mentioned or reply_to_owner or watched or name_hit):
         return
 
     chat_title = msg.chat.title or "личка"
